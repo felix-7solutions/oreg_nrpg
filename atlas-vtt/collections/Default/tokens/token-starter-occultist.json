@@ -1,0 +1,16 @@
+{
+  "atlasRecord": {
+    "format": 1,
+    "name": "Occultist",
+    "imagePath": "atlas-vtt/assets/Occultist_1791215824699_7j7n91.webp",
+    "collection": "Default",
+    "tags": [
+      "Class"
+    ],
+    "showRing": true,
+    "type": "token",
+    "id": "token-starter-occultist",
+    "createdAt": 1791215824702,
+    "modifiedAt": 1791215824702
+  }
+}

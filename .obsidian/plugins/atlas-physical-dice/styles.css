@@ -1,0 +1,610 @@
+.dice-roller-view {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    background: var(--background-primary);
+}
+
+.dice-header h2 {
+    text-align: center;
+    margin: 0;
+    color: var(--text-normal);
+}
+
+.dice-container-large {
+    position: relative;
+    width: 600px;
+    height: 450px;
+    border: 2px solid var(--background-modifier-border);
+    border-radius: 8px;
+    background: var(--background-secondary);
+    overflow: hidden;
+}
+
+.dice-container-large canvas {
+    border-radius: 6px;
+    display: block;
+}
+
+.dice-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Overlay itself is click-through */
+    z-index: 10;
+}
+
+.dice-controls-overlay {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    pointer-events: auto; /* Buttons are clickable */
+}
+
+.dice-result-overlay {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    padding: 15px;
+    border-radius: 8px;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateX(-50%) scale(0.9);
+    pointer-events: auto;
+}
+
+.dice-result-overlay.show {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    border: 2px solid var(--interactive-accent);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.dice-result-overlay.show:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent-hover);
+}
+
+.dice-result-overlay.error {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+    background: var(--background-modifier-error);
+    color: var(--text-error);
+    border: 2px solid var(--text-error);
+}
+
+.dice-roll-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dice-roll-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Floating overlay styles */
+.dice-floating-overlay {
+    position: fixed;
+    pointer-events: none; /* Make overlay click-through */
+    z-index: 999;
+    overflow: visible; /* Allow controls to be dragged anywhere */
+    background: transparent;
+}
+
+.dice-floating-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Container is click-through */
+    background: transparent;
+    overflow: hidden;
+}
+
+/* The dice canvas. Click-through until the pointer is over a die, when the
+   plugin adds .is-over-die; the cursor it sets inline (grab / grabbing). */
+.dice-floating-overlay .dice-floating-container canvas.dice-canvas {
+    pointer-events: none;
+    background: transparent;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    border: none;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: default;
+}
+
+.dice-floating-overlay .dice-floating-container canvas.dice-canvas.is-over-die {
+    pointer-events: auto;
+}
+
+
+/* ---------------------------------------------------------------------------
+   Controls panel, drawn like Atlas VTT's dice panel (atlas-vtt
+   src/app/react/components/dice/dice-dropdown.scss) so the two read as one
+   tool when the dice roll over a map: Obsidian's surface and radius scale, one
+   8px step for padding and gaps alike, and every control in a corner running
+   concentric with the panel's. The --dice-* values mirror Atlas' tokens.
+   --------------------------------------------------------------------------- */
+
+.dice-controls-panel {
+    --dice-gap: 8px;
+    --dice-border-width: 1.5px;
+    --dice-stroke: color-mix(in oklch, var(--mono-100) 18%, transparent);
+    --dice-stroke-subtle: color-mix(in oklch, var(--mono-100) 10%, transparent);
+    --dice-panel-radius: var(--radius-xl);
+    /* Radius inside the border; a control $gap in from it subtracts the gap. */
+    --dice-panel-inner-radius: calc(var(--dice-panel-radius) - var(--dice-border-width));
+    --dice-inset-radius: max(0px, calc(var(--dice-panel-inner-radius) - var(--dice-gap)));
+    --dice-press: 160ms cubic-bezier(0.23, 1, 0.32, 1);
+
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: var(--dice-gap);
+    width: fit-content;
+    padding: var(--dice-gap);
+    background: var(--background-primary);
+    border: var(--dice-border-width) solid var(--dice-stroke);
+    border-radius: var(--dice-panel-radius);
+    corner-shape: var(--corner-shape, round);
+    box-shadow: var(--shadow-l);
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+    pointer-events: auto;
+    z-index: 1000;
+    animation: dice-panel-in 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes dice-panel-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Obsidian gives every <button> its own frame and shadow; the panel draws its own. */
+.dice-controls-panel button {
+    margin: 0;
+    box-shadow: none;
+    font-family: var(--font-interface);
+    corner-shape: var(--corner-shape, round);
+    transition: background-color 100ms ease, color 100ms ease, transform var(--dice-press);
+}
+
+.dice-controls-panel button:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.dice-controls-panel button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dice-controls-panel button svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+
+.dice-controls-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dice-gap);
+}
+
+.dice-controls-drag-handle {
+    display: flex;
+    align-items: center;
+    gap: var(--dice-gap);
+    flex: 1;
+    min-width: 0;
+    padding-left: var(--dice-gap);
+    color: var(--text-muted);
+    cursor: grab;
+    user-select: none;
+}
+
+.dice-controls-drag-handle.is-dragging {
+    cursor: grabbing;
+}
+
+.dice-controls-drag-handle:hover {
+    color: var(--text-normal);
+}
+
+.dice-controls-grip {
+    display: flex;
+    color: var(--text-faint);
+}
+
+.dice-controls-grip svg {
+    width: 16px;
+    height: 16px;
+}
+
+.dice-controls-title {
+    font-size: var(--font-ui-small);
+    font-weight: var(--font-semibold);
+    color: var(--text-normal);
+}
+
+/* The "x" of every Atlas panel: control height, and the corner that faces the
+   panel's own runs concentric with it. */
+.dice-controls-panel .dice-floating-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: var(--input-height);
+    height: var(--input-height);
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-m);
+    border-top-right-radius: var(--dice-inset-radius);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.dice-controls-panel .dice-floating-close-btn:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+/* ── Dice row ─────────────────────────────────────────────────────────────── */
+
+.dice-controls-panel .dice-type-grid {
+    display: flex;
+    gap: var(--dice-gap);
+    align-items: flex-start;
+}
+
+.dice-type-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.dice-controls-panel .dice-type-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: var(--background-modifier-hover);
+    border: var(--dice-border-width) solid var(--dice-stroke-subtle);
+    border-radius: var(--radius-m);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.dice-controls-panel .dice-type-button:hover {
+    background: var(--background-modifier-active-hover);
+    border-color: var(--dice-stroke);
+    color: var(--text-normal);
+}
+
+.dice-controls-panel .dice-type-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* A type with dice on the table, as Atlas marks a selected die. */
+.dice-controls-panel .dice-type-button.is-selected,
+.dice-controls-panel .dice-type-button.is-selected:hover {
+    background: var(--interactive-accent);
+    border-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.dice-controls-panel .dice-type-button.is-selected:hover {
+    filter: brightness(1.1);
+}
+
+.dice-controls-panel .dice-type-button.is-at-limit,
+.dice-controls-panel .dice-type-button.is-at-limit:hover {
+    border-color: var(--text-error);
+    color: var(--text-error);
+}
+
+.dice-type-name {
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+    color: var(--text-faint);
+    user-select: none;
+}
+
+/* Count badge, as on Atlas' dice buttons. */
+.dice-type-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: 2px solid var(--background-primary);
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    pointer-events: none;
+    animation: dice-badge-pop 150ms ease-out both;
+}
+
+.dice-type-badge.is-empty {
+    display: none;
+}
+
+@keyframes dice-badge-pop {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+/* ── Result and status ────────────────────────────────────────────────────── */
+
+.dice-controls-panel .dice-result-overlay {
+    position: static;
+    transform: none;
+    display: none;
+    min-height: 0;
+    padding: var(--dice-gap);
+    background: var(--background-secondary);
+    border: 1px solid var(--dice-stroke-subtle);
+    border-radius: var(--radius-m);
+    font-family: var(--font-monospace);
+    font-size: var(--font-ui-small);
+    font-weight: var(--font-medium);
+    text-align: center;
+    color: var(--text-normal);
+    opacity: 1;
+    overflow-wrap: anywhere;
+}
+
+.dice-controls-panel .dice-result-overlay.show,
+.dice-controls-panel .dice-result-overlay.error {
+    display: block;
+}
+
+.dice-controls-panel .dice-result-overlay.show {
+    cursor: pointer;
+}
+
+.dice-controls-panel .dice-result-overlay.show:hover {
+    background: var(--background-modifier-hover);
+}
+
+.dice-controls-panel .dice-result-overlay.error {
+    background: var(--background-modifier-error);
+    border-color: var(--text-error);
+    color: var(--text-error);
+}
+
+.dice-controls-panel .dice-status-display {
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 0 var(--dice-gap);
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    white-space: pre-wrap;
+    scrollbar-width: thin;
+}
+
+.dice-controls-panel .dice-status-display:empty {
+    display: none;
+}
+
+.dice-controls-panel .dice-reroll-button {
+    width: 100%;
+    height: var(--input-height);
+    padding: 0 12px;
+    background: color-mix(in oklch, var(--color-orange) 18%, transparent);
+    border: 1px solid color-mix(in oklch, var(--color-orange) 50%, transparent);
+    border-radius: var(--radius-m);
+    color: var(--color-orange);
+    font-size: var(--font-ui-small);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+}
+
+.dice-controls-panel .dice-reroll-button:hover {
+    background: color-mix(in oklch, var(--color-orange) 28%, transparent);
+}
+
+/* ── Formula bar ──────────────────────────────────────────────────────────── */
+
+.dice-formula-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--dice-gap);
+    padding-top: var(--dice-gap);
+    border-top: 1px solid var(--dice-stroke-subtle);
+}
+
+.dice-controls-panel .dice-count-display {
+    flex: 1;
+    min-width: 0;
+    padding-left: var(--dice-gap);
+    font-family: var(--font-monospace);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dice-formula-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.dice-controls-panel .dice-clear-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-m);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.dice-controls-panel .dice-clear-button:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-error);
+}
+
+/* Roll sits in the panel's bottom-right corner, concentric with it. */
+.dice-controls-panel .dice-roll-button {
+    width: auto;
+    height: 32px;
+    padding: 0 12px;
+    background: var(--interactive-accent);
+    border: none;
+    border-radius: var(--radius-m);
+    border-bottom-right-radius: var(--dice-inset-radius);
+    color: var(--text-on-accent);
+    font-size: 12px;
+    font-weight: var(--font-medium);
+    cursor: pointer;
+}
+
+.dice-controls-panel .dice-roll-button:hover:not(:disabled) {
+    background: var(--interactive-accent-hover);
+}
+
+/* Sections of the harness pop-outs, which share the panel's frame. */
+.dice-controls-panel .dice-section {
+    padding-top: var(--dice-gap);
+    border-top: 1px solid var(--dice-stroke-subtle);
+}
+
+/* Shown in place of the canvas when WebGL is unavailable. */
+.dice-render-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 4px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* Settings: collapsible sections */
+.dice-settings-header {
+    cursor: pointer;
+    padding: var(--size-4-2) var(--size-4-3);
+    margin-bottom: var(--size-4-2);
+    background: var(--background-modifier-hover);
+    border-radius: var(--radius-s);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dice-settings-title {
+    font-weight: var(--font-semibold);
+    font-size: var(--font-ui-medium);
+}
+
+.dice-settings-arrow {
+    transition: transform 0.2s;
+}
+
+.dice-settings-section.is-collapsed .dice-settings-arrow {
+    transform: rotate(-90deg);
+}
+
+.dice-settings-section.is-collapsed .dice-settings-content {
+    display: none;
+}
+
+.dice-settings-note {
+    font-size: var(--font-ui-smaller);
+    margin-top: var(--size-4-1);
+}
+
+/* The colours a right-click shows over a die: a column of circles rising from
+   its button, over the panel. On document.body, so it sets its own values. */
+.dice-color-picker {
+    position: fixed;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    padding: 8px;
+    transform: translate(-50%, calc(-100% - 8px));
+    background: var(--background-primary);
+    border: 1.5px solid color-mix(in oklch, var(--mono-100) 18%, transparent);
+    border-radius: 9999px;
+    box-shadow: var(--shadow-l);
+    animation: dice-color-picker-in 150ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes dice-color-picker-in {
+    from { opacity: 0; transform: translate(-50%, calc(-100% - 8px)) translateY(6px); }
+    to { opacity: 1; transform: translate(-50%, calc(-100% - 8px)); }
+}
+
+.dice-color-picker .dice-color-circle {
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    border-radius: 9999px;
+    border: 2px solid var(--background-primary);
+    background: var(--dice-swatch);
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--mono-100) 18%, transparent);
+    cursor: pointer;
+    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.dice-color-picker .dice-color-circle:hover {
+    transform: scale(1.08);
+}
+
+.dice-color-picker .dice-color-circle:active {
+    transform: scale(0.92);
+}

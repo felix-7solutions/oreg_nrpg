@@ -1,0 +1,875 @@
+/* Glossary Linker 1.7.0 — assembled from the shared styles and src/styles.css by "npm run build". Do not edit directly. */
+
+/* Styles every linker plugin uses. The token below stands for the plugin class prefix;
+   build.mjs substitutes it when it assembles styles.css. See CONTRIBUTING.md. */
+
+/* The second column of a suggestion row — the note in one pair, the path in the other. */
+body.glossary-hide-suggestion-path .glossary-path,
+body.glossary-hide-suggestion-path .glossary-suggestion-note {
+  display: none;
+}
+
+.glossary-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-ui-small);
+}
+
+.glossary-preview-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.glossary-folder-row .setting-item-name {
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  overflow-wrap: anywhere;
+}
+
+.glossary-folder-add {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 18px 1.5em;
+}
+
+.glossary-folder-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.glossary-folder-addbtn {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.glossary-folder-addbtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Editable rows: the entry itself is the input, so a typo is corrected where it is read. */
+.glossary-list-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 4px 0 4px 1.5em;
+  padding-left: 0.75em;
+  border-left: 2px solid var(--background-modifier-border);
+}
+
+.glossary-list-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+}
+
+.glossary-list-del {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.glossary-list-del svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Ten rows, then it scrolls: a long list must not push the rest of the tab out of reach. */
+.glossary-list-scroll {
+  max-height: 21em;
+  overflow-y: auto;
+}
+
+/* Priority order among the installed linker plugins. Our own row is the movable one, so
+   it is the one that reads as active; the others are context. */
+.glossary-precedence-list {
+  margin: 0 0 18px 1.5em;
+}
+
+.glossary-precedence-list .setting-item {
+  border-top: none;
+  /* Padding matches the folder-list rows, so this nested list lines up with the other one in the same pane: text off the left edge, arrows level with the remove buttons. */ padding: 4px 6px 4px 0.75em;
+}
+
+.glossary-precedence-list .setting-item-name {
+  color: var(--text-muted);
+}
+
+.glossary-precedence-self .setting-item-name {
+  color: var(--text-normal);
+  font-weight: var(--font-semibold);
+}
+
+/* The hidden span trackThemeColors settles a colour through, and the canvas it paints one the
+   swatch cannot take on. Off-flow so measuring never moves the page. */
+.glossary-probe {
+  position: absolute;
+  visibility: hidden;
+}
+
+/* Styles both prose linkers use. The plugin class prefix is substituted by build.mjs. */
+
+/* Colours are declared, not merely read with a fallback. Style Settings shows a colour row's
+   live computed value when the row carries no default, and an undeclared variable reads as
+   empty and renders a blank swatch. On `:root` rather than `body`, so a value set on `body` —
+   Style Settings' own rule, or a snippet's — reaches the mark before this does.
+   See CONTRIBUTING.md. */
+:root {
+  --glossary-link-color: var(--link-color);
+  --glossary-link-color-hover: var(--link-color-hover);
+  --glossary-link-background: rgba(0, 0, 0, 0);
+}
+
+/* A default that follows another of ours belongs where an override lands, not below it: a
+   custom property substitutes its var() on the element it is declared on, so from `:root`
+   these two would go on reading the theme's colour after one was set on `body`. */
+body {
+  --glossary-link-background-hover: var(--glossary-link-background);
+  --glossary-ambiguous-color: var(--glossary-link-color);
+}
+
+/* What a highlight looks like in each state is decided in --pl-* below, where no theme
+   competes, and one rule spends them. That rule sits exactly where the plugin's has always
+   sat: with nothing set, a theme that paints its own links still wins, as it did before any
+   of this was configurable. See CONTRIBUTING.md.
+   The ink is read here rather than from the body-level variable, so a theme that recolours
+   links per note — `--link-color` on a container, which is what a cssclass sets — still
+   decides the colour of a mark inside it. */
+.glossary-link,
+.cm-glossary-link {
+  --pl-ink: var(--link-color);
+  --pl-bg: var(--glossary-link-background);
+  --pl-width: var(--glossary-underline-width, 1px);
+  --pl-style: var(--glossary-underline-style, dotted);
+}
+
+.glossary-ambiguous,
+.cm-glossary-ambiguous {
+  --pl-width: var(--glossary-ambiguous-underline-width, 3px);
+  --pl-style: var(--glossary-ambiguous-underline-style, double);
+}
+
+.glossary-link:hover,
+.cm-glossary-link:hover {
+  --pl-ink: var(--link-color-hover);
+  --pl-bg: var(--glossary-link-background-hover);
+  --pl-style: var(--glossary-underline-style-hover, solid);
+}
+
+/* The tint marks a collision at rest and hover answers with the ordinary hover colour, but the
+   double underline stays either way — it is what says the word is ambiguous. */
+.glossary-ambiguous:hover,
+.cm-glossary-ambiguous:hover {
+  --pl-width: var(--glossary-ambiguous-underline-width, 3px);
+  --pl-style: var(--glossary-ambiguous-underline-style, double);
+}
+
+/* A colour picked in Style Settings is the reader's own, and takes the ink over from the
+   theme's for as long as the pick stands. The classes come from trackPickedColors(). */
+body.glossary-link-color-picked .glossary-link:not(:hover),
+body.glossary-link-color-picked .cm-glossary-link:not(:hover) {
+  --pl-ink: var(--glossary-link-color);
+}
+
+body.glossary-link-color-hover-picked .glossary-link:hover,
+body.glossary-link-color-hover-picked .cm-glossary-link:hover {
+  --pl-ink: var(--glossary-link-color-hover);
+}
+
+/* Relative colours: an installer without them drops the block whole and the colour above
+   stands. The source is read where the mark sits, so the hue follows the link colour of the
+   note it is in. Below the picked rules, above the ambiguous one: a mode outranks a picked
+   colour, a picked ambiguous colour outranks the mode. */
+@supports (color: oklch(from red l c h)) {
+  body.glossary-hue-turned .glossary-link:not(:hover),
+  body.glossary-hue-turned .cm-glossary-link:not(:hover) {
+    --pl-ink: oklch(from var(--link-color) l c calc(h + var(--glossary-hue-shift, 0)));
+  }
+
+  body.glossary-hue-turned .glossary-link:hover,
+  body.glossary-hue-turned .cm-glossary-link:hover {
+    --pl-ink: oklch(from var(--link-color-hover) l c calc(h + var(--glossary-hue-shift, 0)));
+  }
+
+  body.glossary-hue-fixed .glossary-link:not(:hover),
+  body.glossary-hue-fixed .cm-glossary-link:not(:hover) {
+    --pl-ink: oklch(from var(--link-color) l c var(--glossary-hue, 210));
+  }
+
+  body.glossary-hue-fixed .glossary-link:hover,
+  body.glossary-hue-fixed .cm-glossary-link:hover {
+    --pl-ink: oklch(from var(--link-color-hover) l c var(--glossary-hue, 210));
+  }
+
+  /* Inside the block with the mode it answers for: on an installer that drops it, a mode is
+     not merely inert but must leave the theme's own colour where it was. */
+  body.glossary-hue-turned .glossary-link,
+  body.glossary-hue-turned .cm-glossary-link,
+  body.glossary-hue-fixed .glossary-link,
+  body.glossary-hue-fixed .cm-glossary-link {
+    color: var(--pl-ink) !important;
+  }
+}
+
+/* After the link's own, so a word that is both takes the ambiguous colour at rest. */
+body.glossary-ambiguous-color-picked .glossary-ambiguous:not(:hover),
+body.glossary-ambiguous-color-picked .cm-glossary-ambiguous:not(:hover) {
+  --pl-ink: var(--glossary-ambiguous-color);
+}
+
+/* currentColor, not `inherit`: a CSS-wide keyword in a custom property makes the property
+   inherit rather than storing the word, and the highlight would keep its colour. */
+body.glossary-quiet .glossary-link:not(:hover),
+body.glossary-quiet .cm-glossary-link:not(:hover) {
+  --pl-ink: currentColor;
+  --pl-bg: transparent;
+  --pl-style: none;
+}
+
+/* The one rule that meets the theme's own. Every default here resolves to what the property
+   would have been with no rule at all — a transparent background, no radius, no offset,
+   inherited weight — so an untouched vault renders exactly as it did before.
+   The hover selectors carry no declarations of their own; they are listed so each state keeps
+   the specificity its own rule used to have, which is what decides a tie with the theme. */
+.glossary-link,
+.cm-glossary-link,
+.glossary-link:hover,
+.cm-glossary-link:hover {
+  color: var(--pl-ink);
+  background-color: var(--pl-bg);
+  border-radius: var(--glossary-link-radius, 0px);
+  border-bottom: var(--pl-width) var(--pl-style) var(--pl-ink);
+  /* Vertical padding on an inline box does not grow the line, so this offsets the border
+     without reflowing the paragraph. Horizontal padding would, so there is none. */
+  padding-bottom: var(--glossary-underline-offset, 0px);
+  font-weight: var(--glossary-link-weight, inherit);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* The one place the theme is answered rather than left to win: a colour the reader picked and
+   a highlight they quieted. A derived hue answers from inside its own @supports block above.
+   See CONTRIBUTING.md. */
+body.glossary-link-color-picked .glossary-link,
+body.glossary-link-color-picked .cm-glossary-link,
+body.glossary-link-color-hover-picked .glossary-link:hover,
+body.glossary-link-color-hover-picked .cm-glossary-link:hover,
+body.glossary-ambiguous-color-picked .glossary-ambiguous,
+body.glossary-ambiguous-color-picked .cm-glossary-ambiguous,
+body.glossary-quiet .glossary-link:not(:hover),
+body.glossary-quiet .cm-glossary-link:not(:hover) {
+  color: var(--pl-ink) !important;
+}
+
+body.glossary-link-italic .glossary-link,
+body.glossary-link-italic .cm-glossary-link {
+  font-style: italic;
+}
+
+/* Reading view builds the match as a real <a>, and a theme underlines links — which lands a
+   second line under our own. Only that is answered here, at a specificity a theme's
+   `.markdown-rendered a` rule can't outrank; the colour is left to whoever the reader's theme
+   says wins, exactly as before. */
+a.glossary-link,
+a.glossary-link:hover,
+a.glossary-link.internal-link,
+a.glossary-link.internal-link:hover {
+  text-decoration: none;
+}
+
+/* `none` rather than an empty string: with no symbol chosen there is no pseudo-element at all.
+   The symbol is not part of the word, so it carries none of the word's underline — and it
+   survives quiet mode, which is the one thing quiet mode must not hide. */
+.glossary-ambiguous::before,
+.cm-glossary-ambiguous::before,
+body.glossary-mark-after .glossary-ambiguous::after,
+body.glossary-mark-after .cm-glossary-ambiguous::after {
+  content: var(--glossary-ambiguous-symbol, none);
+  border-bottom: none;
+  font-size: 0.8em;
+  vertical-align: super;
+}
+
+body.glossary-mark-after .glossary-ambiguous::before,
+body.glossary-mark-after .cm-glossary-ambiguous::before {
+  content: none;
+}
+
+/* Autocomplete suggestion rows */
+.glossary-suggestion {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.glossary-suggestion-note {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-left: auto;
+}
+
+/* Per-word collision resolver in the "turn into links" preview */
+.glossary-term-select {
+  max-width: 16em;
+}
+
+.glossary-ambiguous-row td {
+  vertical-align: middle;
+}
+
+.glossary-resolve-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+}
+
+.glossary-resolve-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.glossary-resolve-word {
+  font-weight: var(--font-semibold);
+  min-width: 8em;
+}
+
+/* Choose-a-term (collision resolution) dialog */
+.glossary-choose-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+/* A button, so it arrives with Obsidian's own layout: inline-flex puts the caption beside the
+   title, nowrap keeps a long title from breaking, and the fixed control height clips whatever
+   wraps anyway. A row here is a block of text, not a control. */
+.glossary-choose-item {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.glossary-preview-table td,
+.glossary-preview-table th {
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding: 4px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.glossary-preview-file {
+  font-weight: var(--font-semibold);
+  margin: 10px 0 4px;
+}
+
+.glossary-preview-empty {
+  color: var(--text-muted);
+  padding: 12px 0;
+}
+
+.glossary-section-desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin: 4px 0 14px;
+}
+
+/* Language rows share the folder-row indent below, so both nested lists in the
+   pane line up. */
+.glossary-lang-row.setting-item {
+  border-top: none;
+  margin-left: 1.5em;
+  padding: 6px 6px 6px 0.75em;
+  border-left: 2px solid var(--background-modifier-border);
+}
+
+.glossary-lang-error {
+  color: var(--text-error);
+}
+
+/* Scoped to our own rows: `.setting-item.mod-warning` on its own would restyle the warning
+   rows in every other plugin's settings too. */
+.glossary-lang-row.mod-warning .extra-setting-button {
+  color: var(--text-error);
+  opacity: 1;
+}
+
+/* Folder-set editor. Each chosen path is a compact indented row (matching the
+   language-row treatment so the pane reads as one list style); a full-width input
+   with autocomplete and an add button sits below the list. */
+.glossary-folder-rows:not(:empty) {
+  margin: 6px 0;
+}
+
+.glossary-folder-row.setting-item {
+  border-top: none;
+  padding: 4px 6px 4px 0.75em;
+  margin-left: 1.5em;
+  border-left: 2px solid var(--background-modifier-border);
+}
+
+/* The list of what a word could mean, shown on hover over an ambiguous span. Hovering a
+   row opens Obsidian own page preview for that one target, so this stays a plain list. */
+.glossary-choices {
+  position: fixed;
+  z-index: var(--layer-popover);
+  max-width: var(--glossary-choices-width, 320px);
+  padding: 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-primary);
+  box-shadow: var(--shadow-s);
+}
+
+.glossary-choices.glossary-hidden {
+  display: none;
+}
+
+.glossary-choices-title {
+  padding: 2px 8px 6px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.glossary-choices-item {
+  padding: 4px 8px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.glossary-choices-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Second line of a candidate row: what tells this meaning from the one under it — the kind,
+   and the note it lives in. Muted and small so the meanings still scan as a list. */
+.glossary-choices-item-note,
+.glossary-choose-item-note {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+/* @settings
+
+name: Glossary Linker
+id: glossary-linker
+settings:
+  -
+    id: glossary-links
+    title: Links
+    type: heading
+    level: 1
+  -
+    id: glossary-link-color
+    title: Highlight colour
+    description: Follows the theme's link colour until you pick one.
+    type: variable-color
+    format: hex
+    opacity: false
+  -
+    id: glossary-link-color-hover
+    title: Highlight colour on hover
+    description: Follows the theme's hover colour until you pick one.
+    type: variable-color
+    format: hex
+    opacity: false
+  -
+    id: glossary-hue-mode
+    title: Follow the link colour
+    description: Paints a highlight from the link colour where the word sits — including one a cssclass gives a single note — with a hue of your own, so it keeps that relationship when the theme changes. Leave empty to use the colours above. Relative colours need a recent Obsidian installer; without them the colours above are used.
+    type: class-select
+    allowEmpty: true
+    options:
+      -
+        label: Shift its hue
+        value: glossary-hue-turned
+      -
+        label: Replace its hue
+        value: glossary-hue-fixed
+  -
+    id: glossary-hue-shift
+    title: Hue shift
+    description: How far round the colour wheel a highlight sits from the link colour, in degrees. Read by "Shift its hue".
+    type: variable-number-slider
+    default: 0
+    min: -180
+    max: 180
+    step: 5
+  -
+    id: glossary-hue
+    title: Hue
+    description: The hue a highlight takes, in degrees, keeping the lightness and saturation of the link colour beside it. Read by "Replace its hue".
+    type: variable-number-slider
+    default: 210
+    min: 0
+    max: 360
+    step: 5
+  -
+    id: glossary-underline-style
+    title: Underline style
+    type: variable-select
+    default: dotted
+    options:
+      - dotted
+      - solid
+      - dashed
+      - double
+      - none
+  -
+    id: glossary-underline-style-hover
+    title: Underline style on hover
+    type: variable-select
+    default: solid
+    options:
+      - solid
+      - dotted
+      - dashed
+      - double
+      - none
+  -
+    id: glossary-underline-width
+    title: Underline thickness
+    type: variable-number-slider
+    default: 1
+    min: 0
+    max: 4
+    step: 1
+    format: px
+  -
+    id: glossary-underline-offset
+    title: Underline offset
+    description: How far the underline sits below the text. Large values can reach the line under it.
+    type: variable-number-slider
+    default: 0
+    min: 0
+    max: 4
+    step: 1
+    format: px
+  -
+    id: glossary-link-background
+    title: Highlight background
+    description: Fill behind a highlighted word, like a marker pen. Transparent until you pick one; pair it with underline style "none" for the marker look.
+    type: variable-color
+    format: hex
+    opacity: true
+  -
+    id: glossary-link-background-hover
+    title: Highlight background on hover
+    description: Follows the resting background until you pick one.
+    type: variable-color
+    format: hex
+    opacity: true
+  -
+    id: glossary-link-radius
+    title: Background corner radius
+    type: variable-number-slider
+    default: 0
+    min: 0
+    max: 6
+    step: 1
+    format: px
+  -
+    id: glossary-link-weight
+    title: Font weight
+    type: variable-select
+    default: inherit
+    options:
+      - inherit
+      - '500'
+      - '600'
+      - '700'
+  -
+    id: glossary-link-italic
+    title: Italic
+    type: class-toggle
+    default: false
+  -
+    id: glossary-quiet
+    title: Show highlight only on hover
+    description: A highlighted word reads as plain text until the pointer is on it. The ambiguity symbol below stays visible, so collisions can still be spotted.
+    type: class-toggle
+    default: false
+  -
+    id: glossary-ambiguity
+    title: Ambiguous terms
+    type: heading
+    level: 1
+  -
+    id: glossary-ambiguous-underline-style
+    title: Ambiguous-term underline style
+    description: Underline for words with more than one possible target.
+    type: variable-select
+    default: double
+    options:
+      - double
+      - dotted
+      - dashed
+      - solid
+  -
+    id: glossary-ambiguous-underline-width
+    title: Ambiguous-term underline thickness
+    type: variable-number-slider
+    default: 3
+    min: 1
+    max: 5
+    step: 1
+    format: px
+  -
+    id: glossary-ambiguous-color
+    title: Ambiguous-term colour
+    description: Follows the highlight colour until you pick one. A different colour is the clearest way to spot a collision in a theme where the underline barely shows.
+    type: variable-color
+    format: hex
+    opacity: false
+  -
+    id: glossary-ambiguous-symbol
+    title: Ambiguous-term symbol
+    description: Any character or emoji, shown beside a word with more than one possible target. Leave empty for none.
+    type: variable-text
+    quotes: true
+    default: ''
+  -
+    id: glossary-mark-after
+    title: Put the symbol after the word
+    description: Off shows it before the word.
+    type: class-toggle
+    default: false
+  -
+    id: glossary-choices-width
+    title: Ambiguity list width
+    description: How wide the list of a word's possible meanings grows on hover.
+    type: variable-number-slider
+    default: 320
+    min: 200
+    max: 640
+    step: 20
+    format: px
+  -
+    id: glossary-autocomplete
+    title: Autocomplete
+    type: heading
+    level: 1
+  -
+    id: glossary-hide-suggestion-path
+    title: Hide the second column
+    description: Drop the note or path shown beside a suggestion, leaving the name alone.
+    type: class-toggle
+    default: false
+  -
+    id: glossary-side-panel
+    title: Side panel
+    type: heading
+    level: 1
+  -
+    id: glossary-panel-density
+    title: Row density
+    description: How tightly the panel's rows are set. Leave empty for the normal spacing.
+    type: class-select
+    allowEmpty: true
+    options:
+      -
+        label: Dense
+        value: glossary-dense
+      -
+        label: Roomy
+        value: glossary-roomy
+  -
+    id: glossary-panel-font-size
+    title: Text size
+    description: Base size for the panel's rows. Labels that are deliberately secondary keep their own smaller size.
+    type: variable-select
+    default: var(--font-ui-small)
+    options:
+      - var(--font-ui-smaller)
+      - var(--font-ui-small)
+      - var(--font-ui-medium)
+
+*/
+
+/* Collect-aliases preview: checkboxes + collision flag */
+.glossary-harvest-list {
+  margin: 0 0 6px 4px;
+}
+
+.glossary-harvest-alias {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 0;
+}
+
+.glossary-harvest-alias label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.glossary-collision {
+  color: var(--text-warning, var(--text-error));
+  cursor: help;
+}
+
+.glossary-add {
+  color: var(--text-accent);
+  font-weight: var(--font-semibold);
+}
+
+.glossary-del {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+/* Overview panel (right-sidebar ItemView) */
+.glossary-overview {
+  font-size: var(--glossary-panel-font-size, var(--font-ui-small));
+}
+
+body.glossary-dense .glossary-overview-row {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+body.glossary-roomy .glossary-overview-row {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.glossary-overview-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.glossary-overview-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 4px 0 6px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.glossary-overview-controls input[type='number'] {
+  width: 4em;
+}
+
+.glossary-overview-controls select {
+  flex: 1 1 7em;
+}
+
+.glossary-overview-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.glossary-overview-head {
+  font-weight: var(--font-semibold);
+  margin: 12px 0 4px;
+}
+
+.glossary-overview-head.is-toggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.glossary-overview-caret {
+  color: var(--text-muted);
+  width: 1em;
+}
+
+.glossary-overview-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.glossary-overview-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glossary-overview-name.is-link {
+  cursor: pointer;
+}
+
+.glossary-overview-name.is-link:hover {
+  color: var(--text-accent);
+  text-decoration: underline;
+}
+
+.glossary-overview-row.is-orphan .glossary-overview-name {
+  color: var(--text-muted);
+}
+
+.glossary-overview-clash {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
+}
+
+/* Each mark opens one of the notes sharing the title, so it reads as the link it is rather
+   than as a warning: a clash is something to reach into, not something wrong. */
+.glossary-overview-mark {
+  color: var(--glossary-link-color);
+  cursor: pointer;
+  font-size: var(--font-ui-smaller);
+}
+
+.glossary-overview-count {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  white-space: nowrap;
+}
+
+.glossary-overview-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.glossary-overview-act {
+  cursor: pointer;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-accent);
+}
+
+.glossary-overview-empty {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  padding: 6px 0;
+}
+
+.glossary-alias-input {
+  width: 100%;
+}
+
+/* Glossary Linker 1.7.0 */
